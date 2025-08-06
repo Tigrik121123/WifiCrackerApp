@@ -17,8 +17,8 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.9'
-
-      # Устанавливаем Java, чтобы переменная ANDROID_HOME была доступна
+      
+      # Этот шаг важен для правильной установки переменной ANDROID_HOME
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
@@ -32,12 +32,18 @@ jobs:
           pip install --upgrade cython
           pip install --upgrade buildozer
 
-      - name: Build with Buildozer # <--- ИСПРАВЛЕННЫЙ БЛОК
+      - name: Build with Buildozer # <--- ИЗМЕНЕННЫЙ БЛОК
         run: |
-          # Эта команда автоматически принимает все лицензии Android SDK
-          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses
+          # Форсированно принимаем лицензии, создавая файлы вручную
+          # Создаем директорию для лицензий
+          mkdir -p $ANDROID_HOME/licenses
           
-          # А уже после этого запускаем саму сборку
+          # Записываем в файлы хэш-суммы, подтверждающие принятие лицензий
+          echo "24333f8a63b6825ea9c5514f83c2829b004d1fee" > $ANDROID_HOME/licenses/android-sdk-license
+          echo "84831b9409646a918e30573bab4c9c91346d8abd" > $ANDROID_HOME/licenses/android-sdk-preview-license
+          echo "d975f751698a77b662f1254ddbeed3901e976f5a" > $ANDROID_HOME/licenses/intel-android-extra-license
+          
+          # А теперь запускаем саму сборку
           buildozer -v android debug
 
       - name: Upload Artifact
