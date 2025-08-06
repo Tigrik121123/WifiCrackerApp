@@ -29,8 +29,9 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y git zip unzip autoconf automake libtool pkg-config zlib1g-dev libncurses-dev cmake libffi-dev libssl-dev
 
-      - name: Install Buildozer
+      - name: Install Buildozer and Cython # <--- ВАЖНЫЙ ШАГ
         run: |
+          pip install --upgrade cython==3.0.10 # Устанавливаем ту же версию, что и в spec
           pip install --upgrade buildozer
 
       - name: Build with Buildozer
