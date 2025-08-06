@@ -24,23 +24,36 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Install build dependencies
+      - name: Install ALL build dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y git zip unzip autoconf automake libtool pkg-config zlib1g-dev libncurses-dev cmake libffi-dev libssl-dev
 
-      - name: Install Buildozer and Cython # <--- ВАЖНЫЙ ШАГ
+      - name: Install Buildozer and Cython
         run: |
-          pip install --upgrade cython==3.0.10 # Устанавливаем ту же версию, что и в spec
+          pip install --upgrade cython==3.0.10
           pip install --upgrade buildozer
 
-      - name: Build with Buildozer
+      - name: Build with Buildozer (Two-Step Force-Accept Licenses)
         run: |
-          # Этот шаг принимает лицензии перед сборкой
-          mkdir -p $ANDROID_HOME/licenses
-          echo "24333f8a63b6825ea9c5514f83c2829b004d1fee" > $ANDROID_HOME/licenses/android-sdk-license
+          # --- ШАГ 1: Запускаем сборку, чтобы она создала папки и упала (это нормально!) ---
+          # Мы используем '|| true', чтобы ошибка с лицензией не остановила весь процесс
+          buildozer -v android debug || true
           
-          # Запускаем финальную сборку
+          # --- ШАГ 2: Теперь, когда папки созданы, принудительно принимаем ВСЕ лицензии ---
+          # Определяем точный, абсолютный путь к папке licenses
+          LICENSE_DIR="/home/runner/.buildozer/android/platform/android-sdk/licenses"
+          
+          # Создаем саму папку
+          mkdir -p $LICENSE_DIR
+          
+          # Записываем в файлы хэш-суммы, подтверждающие принятие ВСЕХ лицензий
+          echo "24333f8a63b6825ea9c5514f83c2829b004d1fee" > "${LICENSE_DIR}/android-sdk-license"
+          echo "84831b9409646a918e30573bab4c9c91346d8abd" > "${LICENSE_DIR}/android-sdk-preview-license"
+          echo "d975f751698a77b662f1254ddbeed3901e976f5a" > "${LICENSE_DIR}/intel-android-extra-license"
+          
+          # --- ШАГ 3: Запускаем сборку снова. На этот раз она пройдет успешно. ---
+          echo "Licenses force-accepted. Retrying build..."
           buildozer -v android debug
 
       - name: Upload Artifact
