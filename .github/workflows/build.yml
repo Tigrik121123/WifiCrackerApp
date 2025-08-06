@@ -11,17 +11,17 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4 # (Тоже обновил до v4 на всякий случай, это хорошая практика)
+      - uses: actions/checkout@v4
 
       - name: Set up Python
-        uses: actions/setup-python@v5 # (И это тоже)
+        uses: actions/setup-python@v5
         with:
           python-version: '3.9'
 
-      - name: Install buildozer and dependencies
+      - name: Install buildozer and dependencies # <--- ИСПРАВЛЕННЫЙ БЛОК
         run: |
           sudo apt-get update
-          sudo apt-get install -y git zip unzip openjdk-17-jdk autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo5 cmake libffi-dev libssl-dev
+          sudo apt-get install -y git zip unzip openjdk-17-jdk autoconf libtool pkg-config zlib1g-dev libncurses-dev cmake libffi-dev libssl-dev
           pip install --upgrade cython
           pip install --upgrade buildozer
 
@@ -29,7 +29,7 @@ jobs:
         run: |
           buildozer -v android debug
 
-      - name: Upload Artifact # <--- ИСПРАВЛЕННЫЙ БЛОК
+      - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: package
